@@ -1,11 +1,7 @@
-# BRAND Studio — frontend preview
+# BRAND Studio Frontend
 
-Стан: автономна HTML/CSS/JavaScript-верстка фотостудії (без WordPress).
+Standalone HTML/CSS/JS based on WordPress preview 1.1.0. Booking is demo-only.
 
-Публікація: GitHub Actions перевіряє верстку у Chromium та розгортає GitHub Pages тільки після успішного QA.
+Pages: https://webboroda.github.io/photo-studio-frontend/
 
-Вхідні файли: `index.html`, `assets/css/style.css`, `assets/js/app.js`, `assets/images/*`.
-
-Демонстраційна форма не створює бронювань, не приймає платежів і не надсилає даних.
-
-**Відомі обмеження:** частина локальних фото взята зі скриншотів затверджених секцій, тому має вже накладені в растрі іконки/номери; вихідні чисті фотографії й шрифти для піксельної відповідності не надані.
+Tests: GitHub Actions + Playwright.

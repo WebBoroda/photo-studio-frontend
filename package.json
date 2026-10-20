@@ -1,1 +1,1 @@
-{"name":"brand-studio-frontend-preview","version":"1.1.1","private":true,"scripts":{"test":"playwright test"},"devDependencies":{"@playwright/test":"^1.55.0"}}
+{"name":"photo-studio-frontend-qa","private":true,"scripts":{"test":"playwright test"},"devDependencies":{"@playwright/test":"1.56.1"}}
