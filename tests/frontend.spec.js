@@ -96,3 +96,32 @@ test('mobile navigation keeps Light/Dark/Auto controls and floating booking',asy
   await page.locator('.theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme-mode','auto');
 });
+
+
+// Geometric checkpoints extracted from the approved 1536x1024 Hero reference.
+// These complement browser behavior tests: their purpose is to catch unintended
+// layout drift before a release can be published.
+test('approved 1536px Hero geometry and transparent UI', async ({page})=>{
+  await page.setViewportSize({width:1536,height:1024});
+  await loadPhotography(page);
+  const near=async(sel,position,expected,tolerance)=>{
+    const box=await page.locator(sel).first().boundingBox();
+    expect(box, `Missing geometry: ${sel}`).not.toBeNull();
+    expect(Math.abs(box[position]-expected),`${sel} ${position} expected ${expected}px, got ${box[position]}px`).toBeLessThanOrEqual(tolerance);
+  };
+  await near('.nav-shell','x',133,3);
+  await near('.nav-shell','y',13,3);
+  await near('.nav-book','x',1236,5);
+  await near('.nav-book','width',160,5);
+  await near('.hero-content','x',149,5);
+  await near('.hero','height',560,5);
+  await near('.benefits-panel','y',501,5);
+  await near('.benefit-list','y',596,7);
+  await near('.benefit-card','height',249,7);
+  await near('.tour-strip','y',857,7);
+  await expect(page.locator('.hero-pencil')).toHaveCount(1);
+  await expect(page.locator('.nav-actions>.theme-toggle')).toBeVisible();
+  await expect(page.locator('.language-btn')).toHaveText('UA');
+  await expect(page.locator('.floating-booking')).toBeVisible();
+  await page.screenshot({path:'test-results/approved-layout-1536.png',animations:'disabled'});
+});
