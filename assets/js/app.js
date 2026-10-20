@@ -22,6 +22,17 @@
   }
   applyTheme(themeMode);
   $('.theme-toggle').addEventListener('click',()=>applyTheme(themeMode==='light'?'dark':themeMode==='dark'?'auto':'light'));
+  const floatingBooking=$('.floating-booking');
+  const footerCta=$('.final-cta')||$('.footer-cta');
+  const pageFooter=$('.site-footer');
+  if(floatingBooking && 'IntersectionObserver' in window){
+    const visible=new Set();
+    const observer=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>entry.isIntersecting?visible.add(entry.target):visible.delete(entry.target));
+      floatingBooking.classList.toggle('is-footer-hidden',visible.size>0);
+    },{threshold:.02});
+    [footerCta,pageFooter].filter(Boolean).forEach(node=>observer.observe(node));
+  }
   darkPreference.addEventListener?.('change',()=>{if(themeMode==='auto')applyTheme('auto')});
   let toastTimeout;
   function toast(message){

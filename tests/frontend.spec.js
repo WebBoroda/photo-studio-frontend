@@ -60,3 +60,39 @@ test('hall details, FAQ and shared accent tokens',async({page})=>{
   const accent=await page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--accent-gradient').trim());
   expect(accent).toContain('linear-gradient');
 });
+
+test('approved Hero decoration, theme switch, no language arrow and persistent booking',async({page})=>{
+  await page.setViewportSize({width:1536,height:900});
+  await loadPhotography(page);
+  await expect(page.locator('.hero-pencil')).toHaveCount(1);
+  await expect(page.locator('.nav-actions > .theme-toggle')).toBeVisible();
+  await expect(page.locator('.language-btn')).toHaveText('UA');
+  await expect(page.locator('.nav-book')).toHaveText('Забронювати');
+  await expect(page.locator('.floating-booking')).toBeVisible();
+  const hero=await page.locator('.hero').boundingBox();
+  const panel=await page.locator('.benefits-panel').boundingBox();
+  const title=await page.locator('#hero-heading').boundingBox();
+  expect(Math.abs(hero.height-560)).toBeLessThan(15);
+  expect(Math.abs(panel.y-500)).toBeLessThan(18);
+  expect(Math.abs(title.x-150)).toBeLessThan(20);
+  await page.locator('.floating-booking').click();
+  await expect(page.locator('#booking-modal')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.evaluate(()=>{
+    document.documentElement.style.scrollBehavior='auto';
+    document.querySelector('.site-footer').scrollIntoView();
+  });
+  await expect(page.locator('.floating-booking')).toHaveClass(/is-footer-hidden/);
+});
+
+test('mobile navigation keeps Light/Dark/Auto controls and floating booking',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await loadPhotography(page);
+  await expect(page.locator('.nav-actions > .theme-toggle')).toBeVisible();
+  await expect(page.locator('.floating-booking')).toBeVisible();
+  await expect(page.locator('.floating-booking span')).toBeHidden();
+  await page.locator('.theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+  await page.locator('.theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme-mode','auto');
+});
