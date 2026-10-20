@@ -1,23 +1,62 @@
-const { test, expect } = require('@playwright/test');
-for (const width of [320,390,834,1280,1536]) {
- test(`responsive ${width}`, async ({page}) => {
-  await page.setViewportSize({width,height:900});
-  const errors=[]; page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('/');await expect(page.locator('h1')).toContainText('Простір');
-  await expect.poll(async()=>page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
-  expect(errors).toEqual([]);
-  await page.screenshot({path:`test-results/full-${width}.png`,fullPage:true});
- });
+const {test,expect}=require('@playwright/test');
+
+async function loadPhotography(page){
+  await page.goto('/', {waitUntil:'domcontentloaded'});
+  // Native lazy loading remains in production. Full-page QA screenshots don't
+  // naturally scroll, so preload those images in the test browser only.
+  await page.evaluate(()=>document.querySelectorAll('img[loading="lazy"]').forEach(img=>{img.loading='eager'}));
+  await expect.poll(async()=>page.evaluate(()=>Array.from(document.querySelectorAll('img[src]')).every(img=>img.complete&&img.naturalWidth>0)),{timeout:15000}).toBe(true);
 }
-test('mobile menu and Escape',async({page})=>{
- await page.setViewportSize({width:390,height:844});await page.goto('/');
- await page.locator('.mobile-menu-trigger').click();await expect(page.locator('#mobile-navigation')).toBeVisible();
- await page.keyboard.press('Escape');await expect(page.locator('#mobile-navigation')).toBeHidden();
+for(const width of [320,390,834,1280,1536]){
+  test(`responsive, images and themes ${width}px`,async({page})=>{
+    await page.setViewportSize({width,height:900});
+    const errors=[];page.on('pageerror',e=>errors.push(e.message));
+    await loadPhotography(page);
+    await expect(page.locator('h1')).toContainText('Простір');
+    await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+    await expect(page.locator('#benefits-heading')).toBeVisible();
+    await expect(page.locator('#equipment-heading')).toBeAttached();
+    await page.screenshot({path:`test-results/light-${width}.png`,fullPage:true,animations:'disabled'});
+    await page.locator('.theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+    await page.screenshot({path:`test-results/dark-${width}.png`,fullPage:true,animations:'disabled'});
+    expect(errors).toEqual([]);
+  });
+}
+test('mobile navigation, Escape and focus state',async({page})=>{
+  await page.setViewportSize({width:390,height:844});
+  await loadPhotography(page);
+  const button=page.locator('.mobile-menu-trigger');
+  await button.click();
+  await expect(button).toHaveAttribute('aria-expanded','true');
+  await expect(page.locator('#mobile-navigation')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#mobile-navigation')).toBeHidden();
+  await expect(button).toHaveAttribute('aria-expanded','false');
 });
-test('theme and gallery',async({page})=>{
- await page.goto('/');await page.locator('.theme-toggle').click();await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
- await page.locator('[data-gallery]').first().click();await expect(page.locator('#gallery-modal')).toBeVisible();
+test('gallery categories and dialog controls',async({page})=>{
+  await loadPhotography(page);
+  await page.locator('[data-filter="portrait"]').click();
+  await expect(page.locator('[data-filter="portrait"]')).toHaveAttribute('aria-pressed','true');
+  await page.locator('[data-gallery]:visible').first().click();
+  await expect(page.locator('#gallery-modal')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#gallery-modal')).toBeHidden();
 });
-test('booking demo modal',async({page})=>{
- await page.goto('/');await page.locator('.hero-book').click();await expect(page.locator('#booking-modal')).toBeVisible();
+test('demo booking opens and closes',async({page})=>{
+  await loadPhotography(page);
+  await page.locator('.hero-book').click();
+  await expect(page.locator('#booking-modal')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#booking-modal')).toBeHidden();
+});
+test('hall details, FAQ and shared accent tokens',async({page})=>{
+  await loadPhotography(page);
+  await page.locator('.hall-foot .btn-white').first().click();
+  await expect(page.locator('dialog[open]')).toHaveCount(1);
+  await page.keyboard.press('Escape');
+  await page.locator('#faq details').first().locator('summary').click();
+  await expect(page.locator('#faq details').first()).toHaveAttribute('open','');
+  const accent=await page.locator('html').evaluate(el=>getComputedStyle(el).getPropertyValue('--accent-gradient').trim());
+  expect(accent).toContain('linear-gradient');
 });
