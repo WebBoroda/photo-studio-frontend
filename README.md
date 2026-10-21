@@ -1,17 +1,16 @@
-## 1.6.0 — зображення
+# BRAND Studio — HTML/CSS/JS-верстка v1.6.2
 
-Демонстраційні фотографії залів, обладнання й галереї створені ШІ та не зображують реальну фотостудію. Залишаються демо-контентом для універсального шаблону. Оригінальний Hero не змінювався.
+Універсальний демонстраційний лендинг фотостудії. У репозиторії — **тільки статичний frontend**: семантичний HTML, CSS, JavaScript та оптимізовані WebP-зображення. Немає PHP, WordPress, адмінпанелі або серверного механізму бронювання.
 
-# BRAND Studio — responsive HTML preview v1.5.1
+## Поточна реалізація
 
-Standalone first-stage HTML/CSS/JS preview. Open `index.html` on static hosting.
+- Повністю прибрано праву пагінацію; секції вирівняно по центру на мобільних, планшетах і десктопах.
+- Фото-картки мають градієнт знизу вгору; затемнення підняте для читабельності всіх написів.
+- Плавне проявлення секцій, заголовків і карток знизу вгору, делікатний паралакс, ефект матового скла та плавна зміна фотографій. Знижена анімація для `prefers-reduced-motion`.
+- Працюють Light/Dark, мобільне меню, фотогалерея, картки залів, демонстраційні форми та CTA.
 
-This is **not** a WordPress theme or a live booking system. Forms are demonstrational. The route address and contact details are demonstrational. Social URLs are deliberately not configured.
+Фотографії залів, оснащення та галереї — **згенерований ШІ демоконтент**, а не знімки реальної студії. Затверджений Hero збережено. Відеотури не мають реальних відеофайлів і чесно показують попередження. Контактні дані й адреса демонстраційні, посилання на соцмережі не налаштовано; бронювання не створює заявок.
 
-The video tours show an explicit video-unavailable preview because no video was supplied; no photo slideshow is mislabeled as a video. The gallery photos are extracted low-resolution placeholders: provide original high-resolution images before final sign-off.
+## Перевірка
 
-Automated checks: `npm ci && npm test` in an environment with Playwright's Chromium and Python available. The release was also tested through Chromium with isolated inline assets due to browser-network limits in the authoring environment.
-
-
-## Невирішені обмеження медіа
-Оригінали фотографій галереї відсутні. Поточні gallery-*.webp мають 162–347 px завширшки; не можна гарантувати їхню чіткість у великих блоках. Реальні відеофайли також не надані.
+`npm ci && npm test` — браузерні тести Playwright у Chromium. GitHub Actions перевіряє фронтенд перед публікацією в GitHub Pages. Для локального перегляду достатньо статичного HTTP-сервера.
