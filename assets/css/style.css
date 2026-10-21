@@ -350,3 +350,51 @@ html[data-theme="dark"] .perk{background:rgba(41,42,46,.84);border-color:rgba(25
 .benefit-card:after{backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);mask-image:linear-gradient(to top,#000 0%,#000 56%,transparent 100%)}
 
 .gallery-modal img{background:var(--surface-alt)}
+
+/* v1.5.1 correction: photographic detail stays visible beneath neutral glass. */
+:root{--photo-glass:rgba(34,34,36,.38);--photo-glass-border:rgba(255,255,255,.19)}
+html[data-theme="dark"]{--photo-glass:rgba(23,23,26,.48);--photo-glass-border:rgba(255,255,255,.18)}
+/* No broad white-grey fog over the images: small neutral contrast gradient only. */
+.benefit-card:after{height:47%;background:linear-gradient(to top,rgba(27,27,29,.67) 0%,rgba(33,33,35,.36) 49%,transparent 100%);backdrop-filter:none;-webkit-backdrop-filter:none;mask-image:none}
+.benefit-card .card-shade{background:none}
+.benefit-card>img{transform:translateY(var(--photo-drift,0px)) scale(1.035);scale:1;object-position:center center}
+.benefit-card:hover>img{transform:translateY(var(--photo-drift,0px)) scale(1.055);scale:1}
+/* Make room imagery a continuous photo behind the entire card, not a top-half thumbnail. */
+.hall-card{background:#555152}
+.hall-card>img{height:100%;max-height:none;min-height:0;object-fit:cover;object-position:center center}
+.hall-card>.card-shade{background:none}
+.hall-content{background:var(--photo-glass);border-top:1px solid var(--photo-glass-border);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:0;padding:clamp(15px,1.6vw,24px)}
+.hall-content:before{content:"";position:absolute;pointer-events:none;left:0;right:0;bottom:100%;height:56px;background:linear-gradient(to top,var(--photo-glass),transparent)}
+.hall-card .hall-line small,.hall-card .hall-specs small{color:rgba(255,255,255,.9)}
+/* Equipment cards need a disappearing gradient, not an opaque sticker. */
+.gear-card>span{background:linear-gradient(to top,rgba(30,29,31,.72) 0%,rgba(34,33,35,.38) 56%,transparent 100%);border:0;padding:30px 12px 11px;backdrop-filter:none;-webkit-backdrop-filter:none}
+.gear-card .card-shade{background:none}
+/* Informational benefits use a light, neutral glass with readable contrast. */
+.perk{background:rgba(255,255,255,.47);border:1px solid rgba(56,52,53,.13);box-shadow:0 8px 24px rgba(39,36,37,.035);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+html[data-theme="dark"] .perk{background:rgba(255,255,255,.075);border-color:rgba(255,255,255,.15)}
+/* Keep pager clear of the main cards without moving its approved right-edge position. */
+@media(min-width:901px){
+  main .section-block.container:not(.final-cta),main .halls-section.container{width:min(1400px,calc(100% - var(--gutter)*2 - 54px));margin-left:max(var(--gutter),calc((100% - 1480px)/2));margin-right:auto}
+  .benefits-panel{width:min(1400px,calc(100% - clamp(20px,4.1vw,64px) - 54px));margin-left:max(clamp(10px,2.05vw,32px),calc((100% - 1480px)/2));margin-right:auto}
+}
+/* v1.5.1 second browser pass: retain texture in room photos. */
+.hall-content{background:linear-gradient(to bottom,rgba(30,29,31,.25),rgba(26,25,27,.48));backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);border-top-color:rgba(255,255,255,.1)}
+.hall-content:before{background:linear-gradient(to top,rgba(30,29,31,.26),transparent)}
+html[data-theme="dark"] .hall-content{background:linear-gradient(to bottom,rgba(23,23,25,.35),rgba(19,19,21,.58))}
+/* No abrupt blur seam: a photo-first transparent shadow dissolves into the card. */
+.hall-content{background:linear-gradient(to bottom,rgba(27,27,29,.12),rgba(25,25,27,.53) 72%,rgba(24,24,26,.64));border-top:0;backdrop-filter:none;-webkit-backdrop-filter:none}
+.hall-content:before{height:84px;background:linear-gradient(to top,rgba(27,27,29,.12),transparent)}
+html[data-theme="dark"] .hall-content{background:linear-gradient(to bottom,rgba(23,23,25,.17),rgba(17,17,19,.57) 72%,rgba(16,16,18,.68))}
+
+/* v1.6: maintain open, crisp photography and prevent fixed booking from covering media controls. */
+.floating-booking.is-content-hidden{opacity:0;visibility:hidden;pointer-events:none;transform:translateY(12px)}
+.gallery-photo-note{margin:13px 0 0;font-size:.72rem;color:var(--muted);line-height:1.5}
+/* Progressive contrast, with no hard top line or artificial brown/grey glass slab. */
+.hall-content{background:linear-gradient(to bottom,rgba(22,22,24,.14),rgba(22,22,24,.48) 52%,rgba(22,22,24,.72));}
+.hall-content:before{height:90px;background:linear-gradient(to top,rgba(22,22,24,.14),transparent)}
+html[data-theme="dark"] .hall-content{background:linear-gradient(to bottom,rgba(15,15,17,.22),rgba(15,15,17,.57) 54%,rgba(15,15,17,.79))}
+.hall-card .hall-line,.hall-card .hall-content>p,.hall-card .hall-specs{position:relative;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+/* Large, distinct demo pictures remain unclipped and do not require enlargement. */
+.gallery-photo>img{object-position:center;}
+.gallery-a>img{object-position:center 27%}
+@media(prefers-reduced-motion:reduce){.floating-booking.is-content-hidden{transition:none}}

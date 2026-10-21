@@ -33,6 +33,29 @@
     },{threshold:.02});
     [footerCta,pageFooter].filter(Boolean).forEach(node=>observer.observe(node));
   }
+  // A persistent fixed CTA must never cover a room-tour action or gallery content.
+  // It disappears briefly only while the viewport CTA physically intersects one of them.
+  if(floatingBooking){
+    const avoid=$$('.tour-strip, .gallery-grid');
+    let overlapPending=false;
+    function updateFloatingOverlap(){
+      overlapPending=false;
+      // The approved hero shows the booking CTA immediately on first load.
+      if(scrollY<36){floatingBooking.classList.remove('is-content-hidden');return}
+      // Read the button's natural fixed position, even while it is visually hidden.
+      const button=floatingBooking.getBoundingClientRect();
+      const colliding=avoid.some(element=>{
+        const rect=element.getBoundingClientRect();
+        return rect.bottom>button.top+8 && rect.top<button.bottom-8 &&
+          rect.right>button.left+12 && rect.left<button.right-12;
+      });
+      floatingBooking.classList.toggle('is-content-hidden',colliding);
+    }
+    function queueOverlap(){if(!overlapPending){overlapPending=true;requestAnimationFrame(updateFloatingOverlap)}}
+    window.addEventListener('scroll',queueOverlap,{passive:true});
+    window.addEventListener('resize',queueOverlap,{passive:true});
+    queueOverlap();
+  }
   darkPreference.addEventListener?.('change',()=>{if(themeMode==='auto')applyTheme('auto')});
   let toastTimeout;
   function toast(message){

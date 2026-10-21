@@ -208,3 +208,24 @@ test('reduced motion keeps sections visible without reveal animation',async({bro
   await expect(page.locator('#gallery')).toBeAttached();
   await context.close();
 });
+
+
+test('generated demo images are sharp-sized, all gallery photos have real dimensions',async({page})=>{
+  await page.setViewportSize({width:1536,height:900});
+  await loadPhotography(page);
+  for(const image of await page.locator('.gallery-photo img, .benefit-card img, .gear-card img').all()){
+    const dimensions=await image.evaluate(el=>({width:el.naturalWidth,height:el.naturalHeight}));
+    expect(dimensions.width).toBeGreaterThanOrEqual(1000);
+    expect(dimensions.height).toBeGreaterThanOrEqual(700);
+  }
+  await expect(page.locator('.gallery-photo-note')).toContainText('створено ШІ');
+});
+
+test('fixed booking CTA never hides gallery tiles or tour buttons',async({page})=>{
+  await page.setViewportSize({width:1536,height:900});await loadPhotography(page);
+  await page.evaluate(()=>scrollTo({top:document.querySelector('.gallery-grid').getBoundingClientRect().top+scrollY-580,behavior:'instant'}));
+  await expect(page.locator('.floating-booking')).toHaveClass(/is-content-hidden/);
+  await expect(page.locator('.gallery-instagram')).toBeVisible();
+  await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
+  await expect(page.locator('.floating-booking')).not.toHaveClass(/is-content-hidden/);
+});

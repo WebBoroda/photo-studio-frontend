@@ -1,3 +1,15 @@
+## 1.6.0 — High-resolution photography and unobstructed content
+
+- Replaced blurry low-resolution demo imagery with optimized 1000–1448 px AI-generated WebP scenes. Existing approved hero remains unchanged.
+- Distinct neutral photographic overlays with contrast and no hard grey slabs; preserved original section geometry.
+- Floating booking control yields while an interactive photo gallery or tour strip lies underneath.
+- Explicit transparency: pictures are illustrative AI-generated demo images, not real studio photos.
+- Extended browser QA for image dimensions and overlay intersections.
+
+## 1.5.1 (visual corrections in progress)
+- Restored visible photographic cards, neutral translucent overlays, continuous hall imagery, neutral equipment perks and pager spacing.
+- Existing low-resolution gallery source files require original media assets.
+
 # BRAND Studio v1.5.0 — затверджені правки
 
 ## Реалізовано
