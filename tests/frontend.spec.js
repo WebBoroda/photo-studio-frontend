@@ -85,7 +85,7 @@ test('approved Hero decoration, theme switch, no language arrow and persistent b
   await expect(page.locator('.floating-booking')).toHaveClass(/is-footer-hidden/);
 });
 
-test('mobile navigation keeps Light/Dark/Auto controls and floating booking',async({page})=>{
+test('mobile navigation keeps Light/Dark controls and floating booking',async({page})=>{
   await page.setViewportSize({width:390,height:844});
   await loadPhotography(page);
   await expect(page.locator('.nav-actions > .theme-toggle')).toBeVisible();
@@ -94,7 +94,7 @@ test('mobile navigation keeps Light/Dark/Auto controls and floating booking',asy
   await page.locator('.theme-toggle').click();
   await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
   await page.locator('.theme-toggle').click();
-  await expect(page.locator('html')).toHaveAttribute('data-theme-mode','auto');
+  await expect(page.locator('html')).toHaveAttribute('data-theme-mode','light');
 });
 
 
@@ -124,4 +124,30 @@ test('approved 1536px Hero geometry and transparent UI', async ({page})=>{
   await expect(page.locator('.language-btn')).toHaveText('UA');
   await expect(page.locator('.floating-booking')).toBeVisible();
   await page.screenshot({path:'test-results/approved-layout-1536.png',animations:'disabled'});
+});
+
+for(const width of [321,359,371,429,639,640,641,767,768,769,899,900,901,1023,1024,1199,1200,1201,1365,1440,1599,1600,1920,2560]){
+ test('fluid '+width,async({page})=>{
+  await page.setViewportSize({width,height:900});await loadPhotography(page);
+  await expect.poll(()=>page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(width);
+ });
+}
+test('automatic theme initially, only Light Dark after first click',async({browser})=>{
+ const context=await browser.newContext({colorScheme:'dark'}),page=await context.newPage();
+ await page.goto('/');await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+ await expect(page.locator('html')).toHaveAttribute('data-theme-mode','auto');
+ await page.locator('.theme-toggle').click();
+ await expect(page.locator('html')).toHaveAttribute('data-theme-mode','light');
+ await page.reload();await expect(page.locator('html')).toHaveAttribute('data-theme','light');
+ await page.locator('.theme-toggle').click();
+ await expect(page.locator('html')).toHaveAttribute('data-theme-mode','dark');
+ await page.reload();await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+ await context.close();
+});
+test('full-bleed photo, fade and cube',async({page})=>{
+ await page.setViewportSize({width:1920,height:900});await loadPhotography(page);
+ const a=await page.locator('.hero').boundingBox(),b=await page.locator('.hero-media').boundingBox();
+ expect(Math.abs(a.width-b.width)).toBeLessThanOrEqual(1);
+ expect(await page.locator('.hero-media').evaluate(el=>getComputedStyle(el).maskImage)).toContain('linear-gradient');
+ await expect(page.locator('.benefit-card').first().locator('use[href="#i-cube"]')).toHaveCount(1);
 });

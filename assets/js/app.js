@@ -8,20 +8,20 @@
   const svg=name=>`<svg class="icon" aria-hidden="true"><use href="#${name}"></use></svg>`;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
   const darkPreference=matchMedia('(prefers-color-scheme: dark)');
-  let themeMode='light';
-  try{themeMode=localStorage.getItem('brand-demo-theme')||'light'}catch{}
-  if(!['light','dark','auto'].includes(themeMode))themeMode='light';
+  let themeMode='auto';
+  try{const stored=localStorage.getItem('brand-demo-theme');if(stored==='light'||stored==='dark')themeMode=stored}catch{}
   function applyTheme(mode){
     themeMode=mode;html.dataset.themeMode=mode;
     html.dataset.theme=mode==='auto'?(darkPreference.matches?'dark':'light'):mode;
     const toggle=$('.theme-toggle');
-    toggle.innerHTML=svg(mode==='light'?'i-moon':mode==='dark'?'i-sun':'i-settings');
-    toggle.title=`Тема: ${mode==='auto'?'автоматична':mode==='light'?'світла':'темна'}. Натисніть, щоб змінити`;
+    const active=html.dataset.theme;
+    toggle.innerHTML=svg(active==='light'?'i-moon':'i-sun');
+    toggle.title=`Зараз ${active==='light'?'світла':'темна'} тема. Перемкнути на ${active==='light'?'темну':'світлу'}`;
     toggle.setAttribute('aria-label',toggle.title);
-    try{localStorage.setItem('brand-demo-theme',mode)}catch{}
+    if(mode!=='auto')try{localStorage.setItem('brand-demo-theme',mode)}catch{}
   }
   applyTheme(themeMode);
-  $('.theme-toggle').addEventListener('click',()=>applyTheme(themeMode==='light'?'dark':themeMode==='dark'?'auto':'light'));
+  $('.theme-toggle').addEventListener('click',()=>applyTheme(html.dataset.theme==='dark'?'light':'dark'));
   const floatingBooking=$('.floating-booking');
   const footerCta=$('.final-cta')||$('.footer-cta');
   const pageFooter=$('.site-footer');
