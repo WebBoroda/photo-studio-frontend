@@ -151,3 +151,60 @@ test('full-bleed photo, fade and cube',async({page})=>{
  expect(await page.locator('.hero-media').evaluate(el=>getComputedStyle(el).maskImage)).toContain('linear-gradient');
  await expect(page.locator('.benefit-card').first().locator('use[href="#i-cube"]')).toHaveCount(1);
 });
+
+// v1.5: regression coverage for the approved section-navigation and modal behavior.
+test('section pager tracks all sections and stays fixed', async ({page})=>{
+  await page.setViewportSize({width:1536,height:900});
+  await loadPhotography(page);
+  const count=await page.locator('main > section').count();
+  await expect(page.locator('.pager-number')).toHaveCount(count);
+  await expect(page.locator('.pager-number[aria-current="location"]')).toHaveText('01');
+  const before=await page.locator('.side-pagination').boundingBox();
+  await page.locator('#equipment').evaluate(el=>el.scrollIntoView({behavior:'instant'}));
+  await expect(page.locator('.pager-number[aria-current="location"]')).toHaveText('04');
+  const after=await page.locator('.side-pagination').boundingBox();
+  expect(Math.abs(before.x-after.x)).toBeLessThan(1);
+  expect(Math.abs(before.y-after.y)).toBeLessThan(1);
+  await expect(page.locator('.side-pagination .pager-line')).toBeVisible();
+});
+
+test('pagination hidden on phones and rendered on tablets',async({page})=>{
+  await page.setViewportSize({width:390,height:844});await loadPhotography(page);
+  await expect(page.locator('.side-pagination')).toBeHidden();
+  await page.setViewportSize({width:834,height:1024});
+  await expect(page.locator('.side-pagination')).toBeVisible();
+});
+
+test('tour buttons do not pretend a photo gallery is a video', async ({page})=>{
+  await loadPhotography(page);
+  await page.locator('.tour-strip [data-tour]').first().click();
+  await expect(page.locator('#tour-modal')).toBeVisible();
+  await expect(page.locator('#tour-description')).toContainText('ще не додане');
+  await expect(page.locator('#tour-prev')).toHaveCount(0);
+  await expect(page.locator('.tour-poster img')).toHaveCSS('object-fit','cover');
+  await page.keyboard.press('Escape');
+  await page.locator('.gear-card').first().click();
+  await expect(page.locator('#gallery-modal')).toBeVisible();
+  await expect(page.locator('#gallery-modal-title')).toHaveText('Оснащення студії');
+});
+
+test('global radius, social links and map route call-to-action', async ({page})=>{
+  await page.setViewportSize({width:1536,height:1024});await loadPhotography(page);
+  for(const selector of ['.benefits-panel','.halls-section','.equipment-catalog','.final-cta']){
+    await expect(page.locator(selector)).toHaveCSS('border-top-left-radius','26px');
+  }
+  await expect(page.locator('.final-cta')).toHaveCSS('border-bottom-right-radius','26px');
+  await expect(page.locator('.footer-social button')).toHaveCount(6);
+  await expect(page.locator('.footer-map')).toContainText('Прокласти маршрут');
+  await expect(page.locator('.footer-map')).toHaveAttribute('href',/google\.com\/maps\/dir/);
+  await expect(page.locator('.all-halls')).toHaveText('Всі зали');
+  await expect(page.locator('.all-halls svg')).toHaveCount(0);
+});
+
+test('reduced motion keeps sections visible without reveal animation',async({browser})=>{
+  const context=await browser.newContext({reducedMotion:'reduce',viewport:{width:390,height:844}});
+  const page=await context.newPage();await page.goto('/');
+  await expect(page.locator('.reveal-ready')).toHaveCount(0);
+  await expect(page.locator('#gallery')).toBeAttached();
+  await context.close();
+});

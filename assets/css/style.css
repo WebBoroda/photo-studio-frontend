@@ -250,3 +250,103 @@ html[data-theme="dark"] .hero-glow{background:linear-gradient(90deg,rgba(16,14,1
 @media(max-width:370px){.hero{min-height:790px}.hero-facts{margin-top:25px}}
 @media(min-width:1200px){.hero h1{font-size:clamp(72px,5.08vw,78px);line-height:.88}.hero-media img{object-position:0% 52%}}
 @media(min-width:641px) and (max-width:900px){.hero-facts{width:max-content;max-width:100%;padding:12px 16px;border-radius:14px;background:rgba(255,252,249,.78);border:1px solid rgba(255,255,255,.64);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}html[data-theme="dark"] .hero-facts{background:rgba(17,16,18,.79);border-color:rgba(255,255,255,.16)}}
+
+
+/* v1.5 — approved global rhythm, matte cards and quiet motion. Hero geometry remains unchanged. */
+:root{
+  --section-space:clamp(56px,5.3vw,82px);
+  --radius-section:26px;--radius-card:16px;--radius-btn:14px;
+  --glass-grey:rgba(71,76,83,.61);--glass-grey-border:rgba(255,255,255,.28);
+  --motion-duration:850ms;--motion-ease:cubic-bezier(.19,1,.22,1);
+  --duration:390ms;
+}
+html[data-theme="dark"]{--glass-grey:rgba(31,33,39,.81);--glass-grey-border:rgba(255,255,255,.17)}
+/* Section titles are consistently spaced without touching small UI labels. */
+main h2,.section-heading h3,.equipment-catalog h3{letter-spacing:1.5px}
+.section-block{margin-top:var(--section-space)}
+.halls-section.container{
+  width:min(1480px,calc(100% - clamp(20px,4.1vw,64px)));
+  padding:clamp(18px,2vw,30px);
+  border-radius:var(--radius-section);
+  border:1px solid var(--glass-border);
+  background:var(--surface);
+  backdrop-filter:blur(var(--glass-blur));-webkit-backdrop-filter:blur(var(--glass-blur));
+  box-shadow:var(--shadow);
+}
+.halls-section::before{display:none}
+.all-halls{border-radius:var(--radius-btn);min-width:112px;padding:.78rem 1.1rem;font-size:.88rem}
+/* All image-text overlays share the cool, translucent frosted glass — no brown. */
+.benefit-card:after{content:"";position:absolute;z-index:1;inset:auto 0 0;height:55%;background:linear-gradient(to top,rgba(58,63,70,.72),rgba(78,84,91,.38) 68%,transparent);pointer-events:none}
+.benefit-card .card-shade{background:linear-gradient(to top,rgba(36,40,46,.17),transparent 68%)}
+.hall-content{background:var(--glass-grey);border-top:1px solid var(--glass-grey-border);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+html[data-theme="dark"] .hall-content{background:var(--glass-grey)}
+.gear-card>span{background:var(--glass-grey);border-top:1px solid var(--glass-grey-border);padding:13px 12px;min-height:65px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.gear-card .card-shade{background:linear-gradient(to top,rgba(25,27,33,.16),transparent 76%)}
+.tour-strip,.tour-equipment,.tour-halls{min-height:83px;max-height:none;border-radius:18px;background:var(--surface);border-color:var(--glass-border);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.tour-equipment{margin-top:18px}
+.equipment-catalog{margin-top:24px}
+.equipment-section{padding-top:0}
+.equipment-intro{align-items:center}
+.equipment-perks .perk{min-height:165px}
+.perk{border:1px solid rgba(74,75,81,.18);background:rgba(229,230,233,.73);box-shadow:0 9px 25px rgba(35,38,43,.06);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+html[data-theme="dark"] .perk{background:rgba(41,42,46,.84);border-color:rgba(255,255,255,.16)}
+.equipment-visual{margin-top:0}
+/* All card dimensions and rounding use shared tokens */
+.benefit-card,.hall-card,.gear-card,.gallery-photo,.price-card,.review-card{border-radius:var(--radius-card)}
+.price-card,.review-card,.faq-grid details,.slot{border-radius:var(--radius-card)}
+/* A route is an actual, accessible map link, not a fake map tile. */
+.footer-map{min-height:88px;padding:12px;text-align:center;gap:6px;text-decoration:none;border:1px solid var(--border);background:var(--surface-alt);color:var(--text);transition:transform var(--duration) var(--ease),box-shadow var(--duration) var(--ease),border-color var(--duration)}
+.footer-map span{font-size:.79rem;font-weight:600}
+.footer-map:hover{transform:translateY(-3px);border-color:var(--accent);box-shadow:var(--shadow)}
+.footer-social{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.footer-social button{min-width:35px;min-height:35px;transition:transform var(--duration) var(--ease),color var(--duration),background var(--duration)}
+.footer-social button:hover{transform:translateY(-3px);color:var(--accent)}
+/* The final CTA is an independent rounded section, using the same vertical gap to the footer. */
+.final-cta{width:min(var(--content-max),calc(100% - var(--gutter)*2));margin:var(--section-space) auto var(--section-space);border-radius:var(--radius-section);overflow:hidden}
+.final-cta .cta-inner{width:100%;padding-inline:clamp(18px,3vw,45px)}
+/* True video has not been provided; poster occupies the available region, no black letterboxing. */
+.tour-poster{position:relative;overflow:hidden;min-height:210px;aspect-ratio:16/9;border-radius:var(--radius-card);background:var(--surface-alt)}
+.tour-poster>img{width:100%;height:100%;position:absolute;inset:0;object-fit:cover;object-position:center}
+.tour-poster-caption{position:absolute;inset:auto 0 0;display:flex;align-items:center;gap:12px;padding:22px;color:#fff;font-size:.86rem;background:linear-gradient(0deg,rgba(30,32,38,.76),transparent)}
+.tour-poster-caption .icon{flex:0 0 auto;width:25px;height:25px}
+.gallery-photo:after,.gallery-photo:before{content:none!important}
+.gallery-photo:hover>img{transform:scale(1.035)}
+/* Hover subtle depth, gentle light response, and uniform easing. */
+.image-card>img{transition:transform 1100ms var(--motion-ease)}
+.image-card>img{transform:translateY(var(--photo-drift,0px)) scale(1.045)}
+.image-card:hover>img{transform:translateY(var(--photo-drift,0px)) scale(1.075)}
+.benefit-card>img{transform:translateY(var(--photo-drift,0px)) scale(1.12)}
+.benefit-card:hover>img{transform:translateY(var(--photo-drift,0px)) scale(1.15)}
+.benefit-card,.hall-card,.gear-card,.perk,.price-card,.review-card{transition:box-shadow 650ms var(--motion-ease),border-color 650ms var(--motion-ease),transform 650ms var(--motion-ease)}
+.perk:hover,.price-card:hover,.review-card:hover{transform:translateY(-4px);box-shadow:0 18px 42px rgba(36,37,45,.1)}
+.glass{transition:box-shadow 600ms var(--motion-ease),border-color 600ms var(--motion-ease),background 600ms var(--motion-ease)}
+.glass:hover{border-color:color-mix(in srgb,var(--glass-border),var(--accent) 12%)}
+/* Fixed, dynamic page navigation with a moving active divider. */
+.side-pagination{position:fixed;z-index:35;top:clamp(125px,10vw,154px);right:clamp(13px,1.95vw,34px);display:flex;flex-direction:column;align-items:center;gap:5px;color:var(--text);font-size:.75rem;width:40px;padding:4px 0;max-height:calc(100dvh - 155px);overflow-y:auto;scrollbar-width:none}
+.side-pagination::-webkit-scrollbar{display:none}
+.pager-number{position:relative;z-index:1;display:grid;place-items:center;min-width:32px;min-height:20px;color:var(--text);text-decoration:none;opacity:.46;font-weight:400;transition:opacity 540ms var(--motion-ease),transform 540ms var(--motion-ease),font-weight 300ms}
+.pager-number.is-active{opacity:1;transform:scale(1.1);font-weight:700}
+.pager-number:hover{opacity:1}
+.pager-track{position:relative;width:2px;height:18px;background:color-mix(in srgb,var(--text) 24%,transparent);border-radius:4px;overflow:hidden;display:block;flex-shrink:0}
+.pager-progress{position:absolute;inset:0 0 auto;height:calc(var(--progress,0) * 100%);border-radius:4px;background:var(--text);transition:height 320ms linear}
+@media(max-width:767px){.side-pagination{display:none!important}}
+@media(min-width:768px) and (max-width:900px){.side-pagination{display:flex;right:6px;top:118px;width:30px;gap:3px}.pager-track{height:11px}.pager-number{min-height:17px;font-size:.67rem}.section-block.container{width:calc(100% - var(--gutter)*2 - 28px);margin-left:var(--gutter)}.halls-section.container{width:calc(100% - var(--gutter)*2 - 28px);margin-left:var(--gutter)}}
+@media(max-width:900px){.halls-section.container{padding:18px}.equipment-perks .perk{min-height:155px}}
+@media(max-width:640px){:root{--section-space:60px;--radius-section:22px}.halls-section.container{padding:15px;width:calc(100% - 20px)}.tour-strip,.tour-equipment,.tour-halls{min-height:76px}.tour-poster{aspect-ratio:4/3}.tour-poster-caption{padding:15px}.final-cta{width:calc(100% - var(--gutter)*2)}.equipment-perks .perk{min-height:150px}}
+/* Progressive enhancement: children don't disappear if IntersectionObserver isn't available. */
+.reveal-ready:not(.is-revealed){opacity:0;transform:translate3d(0,42px,0);pointer-events:none}
+.reveal-ready.is-revealed{opacity:1;transform:translate3d(0,0,0);transition:opacity var(--motion-duration) var(--motion-ease) var(--reveal-delay,0ms),transform var(--motion-duration) var(--motion-ease) var(--reveal-delay,0ms)}
+@media(prefers-reduced-motion:reduce){.reveal-ready,.reveal-ready:not(.is-revealed),.reveal-ready.is-revealed{opacity:1;transform:none;transition:none!important}.image-card>img,.image-card:hover>img{transform:none!important;transition:none!important}.pager-progress{transition:none!important}}
+
+/* Pager links deliberately override the original Hero next-section circle. */
+.side-pagination .pager-number{height:20px;width:32px;border:0;border-radius:0;background:transparent}
+
+/* Single animated marker migrates underneath the current numeral. */
+.side-pagination .pager-track{background:transparent}
+.side-pagination .pager-progress{display:none}
+.side-pagination .pager-line{position:absolute;top:calc(29px + var(--pager-index,0)*48px);height:18px;width:2px;border-radius:5px;opacity:1;background:var(--text);transition:top 740ms var(--motion-ease);pointer-events:none}
+@media(min-width:768px) and (max-width:900px){.side-pagination .pager-line{top:calc(24px + var(--pager-index,0)*34px);height:11px}}
+@media(prefers-reduced-motion:reduce){.side-pagination .pager-line{transition:none}}
+.benefit-card:after{backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);mask-image:linear-gradient(to top,#000 0%,#000 56%,transparent 100%)}
+
+.gallery-modal img{background:var(--surface-alt)}

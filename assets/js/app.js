@@ -169,19 +169,21 @@
     $('#room-book').dataset.room=button.dataset.room;showDialog($('#room-modal'));
   }));
 
-  const defaultTour=['hall-1.webp','hall-2.webp','hall-3.webp','equipment-main.webp','gear-makeup.webp'];
-  let tourPhotos=defaultTour,currentTour=0;
-  function renderTour(){
-    const img=$('#tour-image');img.src=imageBase+tourPhotos[currentTour];img.alt=`Фото ${currentTour+1} з ${tourPhotos.length}: зал або оснащення студії`;
-    $('#tour-counter').textContent=`${currentTour+1} / ${tourPhotos.length}`;
-    $('#tour-prev').disabled=$('#tour-next').disabled=tourPhotos.length<2;
-  }
-  $$('[data-tour],[data-equipment]').forEach(button=>button.addEventListener('click',()=>{
-    tourPhotos=button.dataset.equipment?[button.dataset.equipment]:button.closest('.equipment-section')?['equipment-main.webp','gear-light.webp','gear-backgrounds.webp','gear-furniture.webp','gear-outfits.webp','gear-makeup.webp']:defaultTour;
-    currentTour=0;renderTour();showDialog($('#tour-modal'));
+  // Video assets are not part of this demo. Never present photos as video playback.
+  const tourInfo={
+    studio:{title:'Відеотур студією',description:'Відео студії ще не додане до демонстрації.',image:'hall-1.webp'},
+    halls:{title:'Відеотур залами',description:'Відео залів ще не додане до демонстрації.',image:'hall-2.webp'},
+    equipment:{title:'Відеотур оснащенням',description:'Відео обладнання ще не додане до демонстрації.',image:'equipment-main.webp'}
+  };
+  $$('[data-tour]').forEach(button=>button.addEventListener('click',()=>{
+    const kind=button.dataset.tourType||button.closest('[data-tour-kind]')?.dataset.tourKind||
+      (button.closest('.equipment-section')?'equipment':button.closest('.halls-section')?'halls':'studio');
+    const info=tourInfo[kind]||tourInfo.studio;
+    $('#tour-title').textContent=info.title;
+    $('#tour-description').textContent=info.description;
+    $('#tour-poster-image').src=imageBase+info.image;
+    showDialog($('#tour-modal'));
   }));
-  function moveTour(step){currentTour=(currentTour+tourPhotos.length+step)%tourPhotos.length;renderTour()}
-  $('#tour-prev').addEventListener('click',()=>moveTour(-1));$('#tour-next').addEventListener('click',()=>moveTour(1));
   let galleryItems=[],currentGallery=0;
   function renderGallery(){
     const source=$('img',galleryItems[currentGallery]),img=$('#gallery-modal-image');img.src=source.src;img.alt=source.alt;
@@ -190,14 +192,99 @@
   }
   $$('[data-gallery]').forEach(button=>button.addEventListener('click',()=>{
     galleryItems=$$('.gallery-photo').filter(p=>!p.hidden);currentGallery=galleryItems.indexOf(button);
-    if(currentGallery<0)return;renderGallery();showDialog($('#gallery-modal'));
+    if(currentGallery<0)return;$('#gallery-modal-title').textContent='Приклади зйомок';renderGallery();showDialog($('#gallery-modal'));
+  }));
+  // Equipment cards retain their own clear image preview; they never masquerade as videos.
+  $$('[data-equipment]').forEach(button=>button.addEventListener('click',()=>{
+    galleryItems=$$('[data-equipment]');currentGallery=galleryItems.indexOf(button);
+    $('#gallery-modal-title').textContent='Оснащення студії';
+    renderGallery();showDialog($('#gallery-modal'));
   }));
   function moveGallery(step){currentGallery=(currentGallery+galleryItems.length+step)%galleryItems.length;renderGallery()}
   $('#gallery-prev').addEventListener('click',()=>moveGallery(-1));$('#gallery-next').addEventListener('click',()=>moveGallery(1));
   document.addEventListener('keydown',e=>{
     if(!['ArrowLeft','ArrowRight'].includes(e.key))return;
     if($('#gallery-modal').open){e.preventDefault();moveGallery(e.key==='ArrowRight'?1:-1)}
-    else if($('#tour-modal').open){e.preventDefault();moveTour(e.key==='ArrowRight'?1:-1)}
   });
+  // Fixed location; links/numerals always reflect semantic sections in main.
+  const sections=$$('main > section');
+  const pager=$('[data-section-pager]');
+  if(pager && sections.length){
+    const labels=sections.map((section,i)=>{
+      if(!section.id)section.id='section-'+String(i+1).padStart(2,'0');
+      return section.querySelector('h1,h2')?.textContent.trim().replace(/\s+/g,' ')||'Секція '+(i+1);
+    });
+    const numeral=(i)=>String(i+1).padStart(2,'0');
+    sections.forEach((section,i)=>{
+      const link=document.createElement('a');link.href='#'+section.id;
+      link.className='pager-number';link.textContent=numeral(i);
+      link.setAttribute('aria-label',`${numeral(i)} — ${labels[i]}`);
+      link.dataset.pagerIndex=String(i);
+      pager.append(link);
+      if(i<sections.length-1){
+        const track=document.createElement('span');track.className='pager-track';track.setAttribute('aria-hidden','true');
+        const progress=document.createElement('span');progress.className='pager-progress';track.append(progress);pager.append(track);
+      }
+    });
+    const activeMarker=document.createElement('span');
+    activeMarker.className='pager-line';activeMarker.setAttribute('aria-hidden','true');
+    pager.append(activeMarker);
+    let ticking=false;
+    function syncPager(){
+      ticking=false;
+      // Center-line identifies current section; threshold handles unusually tall blocks.
+      const probe=scrollY+innerHeight*.42;
+      let active=0;
+      sections.forEach((section,i)=>{if(section.getBoundingClientRect().top+scrollY<=probe)active=i});
+      pager.style.setProperty('--pager-index',String(active));
+      $$('.pager-number',pager).forEach((link,i)=>{
+        link.classList.toggle('is-active',i===active);
+        if(i===active)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');
+      });
+      $$('.pager-track',pager).forEach((track,i)=>{
+        const next=sections[i+1].getBoundingClientRect().top+scrollY;
+        const prev=sections[i].getBoundingClientRect().top+scrollY;
+        const progress=Math.max(0,Math.min(1,(probe-prev)/Math.max(1,next-prev)));
+        track.style.setProperty('--progress',i<active?'1':i===active?String(progress):'0');
+      });
+    }
+    function requestSync(){if(!ticking){ticking=true;requestAnimationFrame(syncPager)}}
+    window.addEventListener('scroll',requestSync,{passive:true});
+    window.addEventListener('resize',requestSync,{passive:true});
+    requestSync();
+  }
+  // Reveal enters visibly from below. No items hidden if JS, IO, or reduced-motion unavailable.
+  if(!reducedMotion.matches && 'IntersectionObserver' in window){
+    const revealTargets=$$('main > section:not(.hero), .benefit-card, .hall-card, .perk, .gear-card, .gallery-photo, .price-card, .review-card, .faq-grid details, .slot');
+    const revealObserver=new IntersectionObserver(entries=>{
+      for(const entry of entries){
+        if(entry.isIntersecting){entry.target.classList.add('is-revealed');revealObserver.unobserve(entry.target)}
+      }
+    },{threshold:0,rootMargin:'0px 0px -35px 0px'});
+    revealTargets.forEach(el=>{
+      // Already visible at initial paint: never hide the layout or hero transition.
+      if(el.getBoundingClientRect().top<innerHeight*.92){return}
+      el.classList.add('reveal-ready');
+      const siblings=el.parentElement?$$(':scope > .reveal-ready',el.parentElement):[];
+      el.style.setProperty('--reveal-delay',Math.min((siblings.length-1)*85,340)+'ms');
+      revealObserver.observe(el);
+    });
+    reducedMotion.addEventListener?.('change',()=>{
+      if(reducedMotion.matches){revealObserver.disconnect();$$('.reveal-ready').forEach(el=>el.classList.add('is-revealed'))}
+    });
+  }
+  // Scroll-dependent parallax only on large screens and only for visible photo cards.
+  if(!reducedMotion.matches && matchMedia('(hover:hover) and (min-width:901px)').matches){
+    const moving=$$('.hall-card, .benefit-card, .gear-card');
+    let busy=false;
+    function parallax(){busy=false;for(const card of moving){
+      const r=card.getBoundingClientRect();
+      if(r.bottom<0||r.top>innerHeight)continue;
+      const displacement=Math.max(-9,Math.min(9,((r.top+r.height/2)/innerHeight-.5)*-13));
+      card.style.setProperty('--photo-drift',displacement.toFixed(1)+'px');
+    }}
+    window.addEventListener('scroll',()=>{if(!busy){busy=true;requestAnimationFrame(parallax)}},{passive:true});
+    parallax();
+  }
   $('#year').textContent=String(new Date().getFullYear());
 })();
