@@ -43,6 +43,13 @@ test('gallery categories and dialog controls',async({page})=>{
   await page.keyboard.press('Escape');
   await expect(page.locator('#gallery-modal')).toBeHidden();
 });
+test('gallery image changes with a visible fade',async({page})=>{
+  await loadPhotography(page);
+  await page.locator('[data-gallery]').first().click();
+  await page.locator('#gallery-next').click();
+  await expect(page.locator('#gallery-modal-image')).toHaveClass(/is-switching/);
+  await expect(page.locator('#gallery-modal-image')).not.toHaveClass(/is-switching/);
+});
 test('demo booking opens and closes',async({page})=>{
   await loadPhotography(page);
   await page.locator('.hero-book').click();
@@ -153,26 +160,43 @@ test('full-bleed photo, fade and cube',async({page})=>{
 });
 
 // v1.5: regression coverage for the approved section-navigation and modal behavior.
-test('section pager tracks all sections and stays fixed', async ({page})=>{
-  await page.setViewportSize({width:1536,height:900});
-  await loadPhotography(page);
-  const count=await page.locator('main > section').count();
-  await expect(page.locator('.pager-number')).toHaveCount(count);
-  await expect(page.locator('.pager-number[aria-current="location"]')).toHaveText('01');
-  const before=await page.locator('.side-pagination').boundingBox();
-  await page.locator('#equipment').evaluate(el=>el.scrollIntoView({behavior:'instant'}));
-  await expect(page.locator('.pager-number[aria-current="location"]')).toHaveText('04');
-  const after=await page.locator('.side-pagination').boundingBox();
-  expect(Math.abs(before.x-after.x)).toBeLessThan(1);
-  expect(Math.abs(before.y-after.y)).toBeLessThan(1);
-  await expect(page.locator('.side-pagination .pager-line')).toBeVisible();
+test('removed pagination and equal horizontal margins across devices',async({page})=>{
+  for(const width of [390,768,834,901,1280,1536,1920]){
+    await page.setViewportSize({width,height:1024});
+    await loadPhotography(page);
+    await expect(page.locator('.side-pagination,.pager-number,[data-section-pager]')).toHaveCount(0);
+    for(const selector of ['.benefits-panel','.halls-section','#equipment','#gallery','#prices','#reviews','#faq']){
+      const box=await page.locator(selector).boundingBox();
+      const left=box.x,right=width-(box.x+box.width);
+      expect(Math.abs(left-right),`${selector} not centered at ${width}: ${left} vs ${right}`).toBeLessThanOrEqual(2);
+    }
+  }
 });
 
-test('pagination hidden on phones and rendered on tablets',async({page})=>{
-  await page.setViewportSize({width:390,height:844});await loadPhotography(page);
-  await expect(page.locator('.side-pagination')).toBeHidden();
-  await page.setViewportSize({width:834,height:1024});
-  await expect(page.locator('.side-pagination')).toBeVisible();
+test('fades begin from bottom and extend high enough behind text',async({page})=>{
+  await page.setViewportSize({width:1536,height:1024});await loadPhotography(page);
+  const benefit=await page.locator('.benefit-card').first().evaluate(el=>{
+    const style=getComputedStyle(el,'::after');return {height:parseFloat(style.height),card:el.clientHeight,gradient:style.backgroundImage};
+  });
+  expect(benefit.height/benefit.card).toBeGreaterThan(.6);
+  expect(benefit.gradient).toContain('linear-gradient');
+  const hall=await page.locator('.hall-card').first().evaluate(el=>getComputedStyle(el.querySelector('.hall-content'),'::before').height);
+  expect(parseFloat(hall)).toBeGreaterThanOrEqual(120);
+  await expect(page.locator('.gear-card>span').first()).toHaveCSS('background-image',/linear-gradient/);
+});
+
+test('scroll-reveal animates heading and cards and honors reduced motion',async({browser})=>{
+  const ctx=await browser.newContext({viewport:{width:1280,height:760},reducedMotion:'no-preference'});
+  const page=await ctx.newPage();await loadPhotography(page);
+  const heading=page.locator('#equipment h2').first();
+  const card=page.locator('.gear-card').first();
+  await expect(heading).toHaveClass(/reveal-ready/);
+  await expect(card).toHaveClass(/reveal-ready/);
+  await heading.scrollIntoViewIfNeeded();
+  await expect(heading).toHaveClass(/is-revealed/);
+  await card.scrollIntoViewIfNeeded();
+  await expect(card).toHaveClass(/is-revealed/);
+  await ctx.close();
 });
 
 test('tour buttons do not pretend a photo gallery is a video', async ({page})=>{

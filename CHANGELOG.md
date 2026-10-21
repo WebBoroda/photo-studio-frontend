@@ -1,3 +1,18 @@
+## 1.6.2 — HTML/CSS/JS-only release
+
+- Removed right-side pagination and its JavaScript entirely; re-centered all sections at mobile, tablet and desktop widths.
+- Raised the existing bottom-up neutral darkening gradients on benefits, rooms and gear cards (no separate top shade), preserving photo-first design.
+- Made approved motion visible: fade and 66px upward reveal of sections, headers, cards; consecutive delays; 16px desktop photo parallax; soft gallery image transitions; responsive glass and hover states.
+- Preserved accessible reduced-motion behavior, Light/Dark, and all existing interactions.
+- No WordPress theme, admin panel or booking backend is included.
+
+## 1.6.1 — Centered layout and stronger card readability
+
+- Removed the fixed right-side section pagination.
+- Re-centered the main sections and benefits panel on tablet and desktop breakpoints.
+- Raised and strengthened the bottom-up darkening gradients on benefits, halls and equipment cards so the upper text remains readable over bright photos.
+- Bumped static asset query strings to reduce browser cache issues.
+
 ## 1.6.0 — High-resolution photography and unobstructed content
 
 - Replaced blurry low-resolution demo imagery with optimized 1000–1448 px AI-generated WebP scenes. Existing approved hero remains unchanged.

@@ -208,10 +208,19 @@
     showDialog($('#tour-modal'));
   }));
   let galleryItems=[],currentGallery=0;
-  function renderGallery(){
-    const source=$('img',galleryItems[currentGallery]),img=$('#gallery-modal-image');img.src=source.src;img.alt=source.alt;
+  let galleryChange=0;
+  function renderGallery(animate=false){
+    const source=$('img',galleryItems[currentGallery]),img=$('#gallery-modal-image');
+    const src=source.src,alt=source.alt,revision=++galleryChange;
     $('#gallery-counter').textContent=`${currentGallery+1} / ${galleryItems.length}`;
     $('#gallery-prev').disabled=$('#gallery-next').disabled=galleryItems.length<2;
+    if(!animate||reducedMotion.matches){img.classList.remove('is-switching');img.src=src;img.alt=alt;return}
+    img.classList.add('is-switching');
+    setTimeout(()=>{
+      if(revision!==galleryChange||!$('#gallery-modal').open)return;
+      img.src=src;img.alt=alt;
+      requestAnimationFrame(()=>img.classList.remove('is-switching'));
+    },190);
   }
   $$('[data-gallery]').forEach(button=>button.addEventListener('click',()=>{
     galleryItems=$$('.gallery-photo').filter(p=>!p.hidden);currentGallery=galleryItems.indexOf(button);
@@ -223,73 +232,31 @@
     $('#gallery-modal-title').textContent='Оснащення студії';
     renderGallery();showDialog($('#gallery-modal'));
   }));
-  function moveGallery(step){currentGallery=(currentGallery+galleryItems.length+step)%galleryItems.length;renderGallery()}
+  function moveGallery(step){currentGallery=(currentGallery+galleryItems.length+step)%galleryItems.length;renderGallery(true)}
+  $('#gallery-modal').addEventListener('close',()=>{$('#gallery-modal-image').classList.remove('is-switching');galleryChange++});
   $('#gallery-prev').addEventListener('click',()=>moveGallery(-1));$('#gallery-next').addEventListener('click',()=>moveGallery(1));
   document.addEventListener('keydown',e=>{
     if(!['ArrowLeft','ArrowRight'].includes(e.key))return;
     if($('#gallery-modal').open){e.preventDefault();moveGallery(e.key==='ArrowRight'?1:-1)}
   });
-  // Fixed location; links/numerals always reflect semantic sections in main.
-  const sections=$$('main > section');
-  const pager=$('[data-section-pager]');
-  if(pager && sections.length){
-    const labels=sections.map((section,i)=>{
-      if(!section.id)section.id='section-'+String(i+1).padStart(2,'0');
-      return section.querySelector('h1,h2')?.textContent.trim().replace(/\s+/g,' ')||'Секція '+(i+1);
-    });
-    const numeral=(i)=>String(i+1).padStart(2,'0');
-    sections.forEach((section,i)=>{
-      const link=document.createElement('a');link.href='#'+section.id;
-      link.className='pager-number';link.textContent=numeral(i);
-      link.setAttribute('aria-label',`${numeral(i)} — ${labels[i]}`);
-      link.dataset.pagerIndex=String(i);
-      pager.append(link);
-      if(i<sections.length-1){
-        const track=document.createElement('span');track.className='pager-track';track.setAttribute('aria-hidden','true');
-        const progress=document.createElement('span');progress.className='pager-progress';track.append(progress);pager.append(track);
-      }
-    });
-    const activeMarker=document.createElement('span');
-    activeMarker.className='pager-line';activeMarker.setAttribute('aria-hidden','true');
-    pager.append(activeMarker);
-    let ticking=false;
-    function syncPager(){
-      ticking=false;
-      // Center-line identifies current section; threshold handles unusually tall blocks.
-      const probe=scrollY+innerHeight*.42;
-      let active=0;
-      sections.forEach((section,i)=>{if(section.getBoundingClientRect().top+scrollY<=probe)active=i});
-      pager.style.setProperty('--pager-index',String(active));
-      $$('.pager-number',pager).forEach((link,i)=>{
-        link.classList.toggle('is-active',i===active);
-        if(i===active)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');
-      });
-      $$('.pager-track',pager).forEach((track,i)=>{
-        const next=sections[i+1].getBoundingClientRect().top+scrollY;
-        const prev=sections[i].getBoundingClientRect().top+scrollY;
-        const progress=Math.max(0,Math.min(1,(probe-prev)/Math.max(1,next-prev)));
-        track.style.setProperty('--progress',i<active?'1':i===active?String(progress):'0');
-      });
-    }
-    function requestSync(){if(!ticking){ticking=true;requestAnimationFrame(syncPager)}}
-    window.addEventListener('scroll',requestSync,{passive:true});
-    window.addEventListener('resize',requestSync,{passive:true});
-    requestSync();
-  }
   // Reveal enters visibly from below. No items hidden if JS, IO, or reduced-motion unavailable.
   if(!reducedMotion.matches && 'IntersectionObserver' in window){
-    const revealTargets=$$('main > section:not(.hero), .benefit-card, .hall-card, .perk, .gear-card, .gallery-photo, .price-card, .review-card, .faq-grid details, .slot');
+    const revealTargets=$$('main > section:not(.hero), main > section:not(.hero) h2, .equipment-catalog h3, .benefit-card, .hall-card, .perk, .gear-card, .gallery-photo, .price-card, .review-card, .faq-grid details, .slot');
     const revealObserver=new IntersectionObserver(entries=>{
       for(const entry of entries){
         if(entry.isIntersecting){entry.target.classList.add('is-revealed');revealObserver.unobserve(entry.target)}
       }
     },{threshold:0,rootMargin:'0px 0px -35px 0px'});
+    const siblingCounts=new WeakMap();
     revealTargets.forEach(el=>{
-      // Already visible at initial paint: never hide the layout or hero transition.
-      if(el.getBoundingClientRect().top<innerHeight*.92){return}
+      // Keep first viewport content visible; reveal lower elements on approach.
+      if(el.getBoundingClientRect().top<innerHeight*.90){return}
+      const parent=el.parentElement;
+      const index=siblingCounts.get(parent)||0;
+      siblingCounts.set(parent,index+1);
       el.classList.add('reveal-ready');
-      const siblings=el.parentElement?$$(':scope > .reveal-ready',el.parentElement):[];
-      el.style.setProperty('--reveal-delay',Math.min((siblings.length-1)*85,340)+'ms');
+      const isCard=el.matches('.benefit-card,.hall-card,.perk,.gear-card,.gallery-photo,.price-card,.review-card,.slot');
+      el.style.setProperty('--reveal-delay',Math.min(index*(isCard?125:45),500)+'ms');
       revealObserver.observe(el);
     });
     reducedMotion.addEventListener?.('change',()=>{
@@ -303,7 +270,7 @@
     function parallax(){busy=false;for(const card of moving){
       const r=card.getBoundingClientRect();
       if(r.bottom<0||r.top>innerHeight)continue;
-      const displacement=Math.max(-9,Math.min(9,((r.top+r.height/2)/innerHeight-.5)*-13));
+      const displacement=Math.max(-16,Math.min(16,((r.top+r.height/2)/innerHeight-.5)*-28));
       card.style.setProperty('--photo-drift',displacement.toFixed(1)+'px');
     }}
     window.addEventListener('scroll',()=>{if(!busy){busy=true;requestAnimationFrame(parallax)}},{passive:true});
