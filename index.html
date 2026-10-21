@@ -9,7 +9,19 @@
   <meta name="description" content="BRAND Studio — демонстраційний сучасний сайт фотостудії: зали, професійне оснащення, приклади зйомок, ціни та бронювання.">
   <link rel="preload" as="image" href="assets/images/hero.webp" fetchpriority="high">
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"BRAND Studio — демонстраційний дизайн фотостудії","inLanguage":"uk","description":"Демо-версія універсального сайту фотостудії"}</script>
-<link rel="stylesheet" href="assets/css/style.css?v=1.4.0">
+<script>
+  // Resolve the system theme before the stylesheet paints the first frame.
+  (()=>{try{
+    const saved=localStorage.getItem('brand-demo-theme');
+    const mode=saved==='light'||saved==='dark'?saved:'auto';
+    document.documentElement.dataset.themeMode=mode;
+    document.documentElement.dataset.theme=mode==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):mode;
+  }catch{
+    document.documentElement.dataset.themeMode='auto';
+    document.documentElement.dataset.theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  }})();
+</script>
+<link rel="stylesheet" href="assets/css/style.css?v=1.4.1">
 </head>
 <body>
 
