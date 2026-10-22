@@ -372,7 +372,8 @@ test('Hero button widths and map route at responsive breakpoints',async({page})=
     expect(m.map.right).toBeLessThanOrEqual(width+1);
     if(width<=640){
       expect(Math.abs(m.first.w-265)).toBeLessThan(2);
-      expect(Math.abs(m.second.w-237)).toBeLessThan(2);
+      expect(Math.abs(m.second.w-265)).toBeLessThan(2);
+      expect(Math.abs(m.first.w-m.second.w)).toBeLessThan(1);
       expect(m.second.y).toBeGreaterThan(m.first.b);
     }else{
       expect(Math.abs(m.first.y-m.second.y)).toBeLessThan(3);

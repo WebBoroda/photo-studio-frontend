@@ -508,7 +508,7 @@ html[data-theme="dark"] .hall-card > .card-shade{
   .hero-actions{align-items:center}
   .hero-actions .btn{max-width:100%}
   .hero-actions .hero-book{width:min(265px,100%)}
-  .hero-actions .btn-ghost{width:min(237px,100%)}
+  .hero-actions .btn-ghost{width:min(265px,100%)}
 }
 
 /* The route link follows contacts on compact screens instead of disappearing. */
