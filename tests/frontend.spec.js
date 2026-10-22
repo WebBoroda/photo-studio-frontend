@@ -266,7 +266,7 @@ for(const scheme of ['light','dark']){
     await page.setViewportSize({width:1536,height:1024});
     await page.emulateMedia({colorScheme:scheme});
     await loadPhotography(page);
-    if(scheme==='dark')await page.locator('.theme-toggle').click();
+    await expect(page.locator('html')).toHaveAttribute('data-theme',scheme);
     for(const card of await page.locator('.hall-card').all()){
       const {shade,content,before,topBorder}=await card.evaluate(el=>({
         shade:getComputedStyle(el.querySelector('.card-shade')).backgroundImage,
