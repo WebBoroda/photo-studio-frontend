@@ -180,8 +180,14 @@ test('fades begin from bottom and extend high enough behind text',async({page})=
   });
   expect(benefit.height/benefit.card).toBeGreaterThan(.6);
   expect(benefit.gradient).toContain('linear-gradient');
-  const hall=await page.locator('.hall-card').first().evaluate(el=>getComputedStyle(el.querySelector('.hall-content'),'::before').height);
-  expect(parseFloat(hall)).toBeGreaterThanOrEqual(120);
+  const hall=await page.locator('.hall-card').first().evaluate(el=>({
+    image:getComputedStyle(el.querySelector('.card-shade')).backgroundImage,
+    info:getComputedStyle(el.querySelector('.hall-content')).backgroundImage,
+    seam:getComputedStyle(el.querySelector('.hall-content'),'::before').content
+  }));
+  expect(hall.image).toContain('linear-gradient');
+  expect(hall.info).toBe('none');
+  expect(hall.seam).toBe('none');
   await expect(page.locator('.gear-card>span').first()).toHaveCSS('background-image',/linear-gradient/);
 });
 
@@ -253,3 +259,25 @@ test('fixed booking CTA never hides gallery tiles or tour buttons',async({page})
   await page.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
   await expect(page.locator('.floating-booking')).not.toHaveClass(/is-content-hidden/);
 });
+
+// Regression: a single full-card fade means no hard horizontal join on any room.
+for(const scheme of ['light','dark']){
+  test(`hall card fade has no overlapping overlay seam (${scheme})`,async({page})=>{
+    await page.setViewportSize({width:1536,height:1024});
+    await page.emulateMedia({colorScheme:scheme});
+    await loadPhotography(page);
+    if(scheme==='dark')await page.locator('.theme-toggle').click();
+    for(const card of await page.locator('.hall-card').all()){
+      const {shade,content,before,topBorder}=await card.evaluate(el=>({
+        shade:getComputedStyle(el.querySelector('.card-shade')).backgroundImage,
+        content:getComputedStyle(el.querySelector('.hall-content')).backgroundImage,
+        before:getComputedStyle(el.querySelector('.hall-content'),'::before').content,
+        topBorder:getComputedStyle(el.querySelector('.hall-content')).borderTopWidth
+      }));
+      expect(shade).toContain('linear-gradient');
+      expect(content).toBe('none');
+      expect(before).toBe('none');
+      expect(topBorder).toBe('0px');
+    }
+  });
+}

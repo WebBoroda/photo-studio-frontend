@@ -472,3 +472,32 @@ html[data-theme="dark"] .hall-content{
   .gallery-modal #gallery-modal-image{transition:none!important}
   .reveal-ready:not(.is-revealed){opacity:1;transform:none;pointer-events:auto}
 }
+
+
+/* v1.6.3: room cards use ONE continuous photo overlay, never two adjoining blocks.
+   The gradient is painted on the existing full-card shade behind all text. */
+.hall-card > .card-shade{
+  background:linear-gradient(to top,
+    rgba(12,12,14,.88) 0%,
+    rgba(14,14,16,.74) 19%,
+    rgba(17,17,19,.60) 37%,
+    rgba(18,18,20,.38) 52%,
+    rgba(19,19,21,.16) 65%,
+    transparent 79%);
+}
+.hall-content,html[data-theme="dark"] .hall-content{
+  background:transparent;
+  border-top:0;
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+}
+.hall-content::before{content:none}
+html[data-theme="dark"] .hall-card > .card-shade{
+  background:linear-gradient(to top,
+    rgba(7,7,9,.93) 0%,
+    rgba(9,9,11,.80) 19%,
+    rgba(11,11,13,.64) 37%,
+    rgba(12,12,14,.43) 52%,
+    rgba(14,14,16,.20) 65%,
+    transparent 79%);
+}
