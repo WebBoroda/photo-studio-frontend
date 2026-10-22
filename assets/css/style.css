@@ -89,7 +89,7 @@ html[data-theme="dark"] .benefits-panel{background:rgba(25,23,25,.86)}
 /* medium */
 @media(max-width:1180px){
  .desktop-nav{gap:14px;font-size:.76rem}.nav-shell{padding-left:14px}.hero-content{margin-left:2.5vw}.hero h1{font-size:clamp(3.65rem,6vw,5.2rem)}
- .hero-fact{padding:0 14px;min-width:155px}.hero-fact .icon{width:27px;height:27px}.benefit-card{height:220px}.benefit-text p{font-size:.73rem}.benefit-text h3{font-size:1rem}.hall-content{padding:17px}.hall-specs{gap:7px}.hall-specs>span{font-size:.69rem;gap:5px}.hall-specs .icon{width:20px;height:20px}.hall-specs small{font-size:.62rem}.hall-card{min-height:480px}.equipment-perks{grid-template-columns:repeat(2,1fr)}.perk{min-height:125px}.equipment-visual{height:430px}.footer-main{grid-template-columns:1fr 1.4fr .5fr 1fr}.footer-map{display:none}
+ .hero-fact{padding:0 14px;min-width:155px}.hero-fact .icon{width:27px;height:27px}.benefit-card{height:220px}.benefit-text p{font-size:.73rem}.benefit-text h3{font-size:1rem}.hall-content{padding:17px}.hall-specs{gap:7px}.hall-specs>span{font-size:.69rem;gap:5px}.hall-specs .icon{width:20px;height:20px}.hall-specs small{font-size:.62rem}.hall-card{min-height:480px}.equipment-perks{grid-template-columns:repeat(2,1fr)}.perk{min-height:125px}.equipment-visual{height:430px}.footer-main{grid-template-columns:1fr 1.4fr .5fr 1fr}.footer-map{grid-column:4;grid-row:2}
 }
 @media(max-width:900px){
  :root{--section-space:70px;--radius-section:22px}
@@ -500,4 +500,27 @@ html[data-theme="dark"] .hall-card > .card-shade{
     rgba(12,12,14,.43) 52%,
     rgba(14,14,16,.20) 65%,
     transparent 79%);
+}
+
+
+/* v1.6.5 — keep Hero buttons at their original compact widths on stacked layouts. */
+@media(max-width:640px){
+  .hero-actions{align-items:center}
+  .hero-actions .btn{max-width:100%}
+  .hero-actions .hero-book{width:min(265px,100%)}
+  .hero-actions .btn-ghost{width:min(237px,100%)}
+}
+
+/* The route link follows contacts on compact screens instead of disappearing. */
+@media(min-width:641px) and (max-width:900px){
+  .footer-main address{grid-column:3;grid-row:1}
+  .footer-map{grid-column:3;grid-row:2}
+  .footer-social{grid-row:3}
+}
+@media(max-width:640px){
+  .footer-main>.brand{grid-column:1;grid-row:1}
+  .footer-main address{grid-column:2;grid-row:1}
+  .footer-map{grid-column:1/-1;grid-row:2}
+  .footer-main nav{grid-column:1/-1;grid-row:3;order:0}
+  .footer-social{grid-column:1/-1;grid-row:4}
 }

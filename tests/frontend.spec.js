@@ -353,3 +353,35 @@ test('mobile horizontal card swipe still works after scroll fix',async({browser}
   }
   await context.close();
 });
+
+// v1.6.5: the route must remain available and stacked CTA widths must not grow.
+test('Hero button widths and map route at responsive breakpoints',async({page})=>{
+  test.setTimeout(60000);
+  await page.setViewportSize({width:390,height:900});
+  await loadPhotography(page);
+  for(const width of [320,390,640,641,768,900,901,1180,1181,1536]){
+    await page.setViewportSize({width,height:900});
+    const m=await page.evaluate(()=>{
+      const box=s=>{const r=document.querySelector(s).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height,b:r.bottom,right:r.right}};
+      return {first:box('.hero-book'),second:box('.hero-actions .btn-ghost'),
+        map:box('.footer-map'),address:box('.footer-main address'),
+        display:getComputedStyle(document.querySelector('.footer-map')).display};
+    });
+    expect(m.display).not.toBe('none');
+    expect(m.map.h).toBeGreaterThan(70);
+    expect(m.map.right).toBeLessThanOrEqual(width+1);
+    if(width<=640){
+      expect(Math.abs(m.first.w-265)).toBeLessThan(2);
+      expect(Math.abs(m.second.w-237)).toBeLessThan(2);
+      expect(m.second.y).toBeGreaterThan(m.first.b);
+    }else{
+      expect(Math.abs(m.first.y-m.second.y)).toBeLessThan(3);
+    }
+    if(width<=1180)expect(m.map.y).toBeGreaterThanOrEqual(m.address.b-1);
+  }
+  await page.setViewportSize({width:390,height:900});
+  await page.locator('.theme-toggle').click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme','dark');
+  await expect(page.locator('.footer-map')).toBeVisible();
+  await expect(page.locator('.footer-map')).toContainText('Прокласти маршрут');
+});
