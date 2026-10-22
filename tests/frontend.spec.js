@@ -281,3 +281,75 @@ for(const scheme of ['light','dark']){
     }
   });
 }
+
+
+// Mobile touch regression: upward swipes on carousels must move the page.
+test('touch carousels: vertical gestures scroll the page, not the cards',async({browser})=>{
+  test.setTimeout(60000);
+  for(const width of [390,834]){
+    const context=await browser.newContext({viewport:{width,height:844},hasTouch:true,isMobile:true,deviceScaleFactor:2});
+    const page=await context.newPage();
+    await loadPhotography(page);
+    const cdp=await context.newCDPSession(page);
+    const swipe=async(x,y,dx,dy)=>{
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
+      for(let n=1;n<=6;n++){
+        await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x+dx*n/6,y:y+dy*n/6,id:1}]});
+        await page.waitForTimeout(20);
+      }
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+      await page.waitForTimeout(260);
+    };
+    for(const selector of width===390?
+      ['#benefit-list','#hall-list','#equipment-list','#review-list','.slots']:
+      ['#benefit-list','#hall-list','#equipment-list','#review-list']){
+      await page.evaluate(selector=>{
+        document.documentElement.style.scrollBehavior='auto';
+        const el=document.querySelector(selector);
+        el.scrollIntoView({behavior:'instant',block:'center'});
+        el.scrollTop=0;
+      },selector);
+      await page.waitForTimeout(150);
+      const before=await page.locator(selector).evaluate(el=>({
+        overflowY:getComputedStyle(el).overflowY,
+        pageScroll:scrollY,
+        bounds:el.getBoundingClientRect().toJSON()
+      }));
+      expect(before.overflowY,selector+' at '+width+'px').toBe('hidden');
+      const x=before.bounds.x+before.bounds.width*.52;
+      const y=before.bounds.y+Math.min(before.bounds.height*.5,120);
+      await swipe(x,y,0,-96);
+      const after=await page.locator(selector).evaluate(el=>({cardScroll:el.scrollTop,pageScroll:scrollY}));
+      expect(after.cardScroll,selector+' moved vertically at '+width+'px').toBe(0);
+      expect(after.pageScroll-before.pageScroll,selector+' trapped page scrolling at '+width+'px').toBeGreaterThan(24);
+    }
+    await context.close();
+  }
+});
+
+test('mobile horizontal card swipe still works after scroll fix',async({browser})=>{
+  test.setTimeout(45000);
+  const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true,deviceScaleFactor:2});
+  const page=await context.newPage();await loadPhotography(page);
+  const cdp=await context.newCDPSession(page);
+  for(const selector of ['#benefit-list','#hall-list','#equipment-list','#review-list']){
+    await page.evaluate(selector=>{
+      document.documentElement.style.scrollBehavior='auto';
+      const el=document.querySelector(selector);
+      el.scrollIntoView({behavior:'instant',block:'center'});
+      el.scrollLeft=0;
+    },selector);
+    await page.waitForTimeout(150);
+    const rect=await page.locator(selector).boundingBox();
+    const x=rect.x+rect.width*.85,y=rect.y+Math.min(rect.height*.5,120);
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x,y,id:1}]});
+    for(let n=1;n<=6;n++){
+      await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:x-180*n/6,y,id:1}]});
+      await page.waitForTimeout(20);
+    }
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+    await expect.poll(async()=>page.locator(selector).evaluate(el=>el.scrollLeft),{timeout:2000}).toBeGreaterThan(20);
+    expect(await page.locator(selector).evaluate(el=>el.scrollTop)).toBe(0);
+  }
+  await context.close();
+});
